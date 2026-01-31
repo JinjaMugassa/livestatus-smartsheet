@@ -1,0 +1,35 @@
+name: Livestatus to Smartsheet
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # 08:30 Tanzania (UTC+3)
+  workflow_dispatch:
+
+jobs:
+  run-livestatus:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Livestatus automation
+        env:
+          WIALON_TOKEN: ${{ secrets.WIALON_TOKEN }}
+          GEOFENCE_RESOURCE_ID: ${{ secrets.GEOFENCE_RESOURCE_ID }}
+          LIVE_STATUS_TEMPLATE_ID: ${{ secrets.LIVE_STATUS_TEMPLATE_ID }}
+          REPORT_OBJECT_ID: ${{ secrets.REPORT_OBJECT_ID }}
+          SM_TOKEN: ${{ secrets.SM_TOKEN }}
+          LIVE_SHEET_ID: ${{ secrets.LIVE_SHEET_ID }}
+        run: |
+          python live_status_to_smartsheet.py

@@ -1,0 +1,6 @@
+requests
+python-dotenv
+pytz
+pandas
+openpyxl
+smartsheet-python-sdk
