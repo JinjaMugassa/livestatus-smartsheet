@@ -1,0 +1,72 @@
+name: Geofence to Smartsheet
+
+on:
+  schedule:
+    - cron: '30 6 * * *'   # 09:30 Tanzania (UTC+3)
+  workflow_dispatch:
+
+jobs:
+  run-geofence:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Geofence automation
+        env:
+          WIALON_TOKEN: ${{ secrets.WIALON_TOKEN }}
+          GEOFENCE_RESOURCE_ID: ${{ secrets.GEOFENCE_RESOURCE_ID }}
+          GEOFENCE_TEMPLATE_ID: ${{ secrets.GEOFENCE_TEMPLATE_ID }}
+          REPORT_OBJECT_ID: ${{ secrets.REPORT_OBJECT_ID }}
+          SM_TOKEN: ${{ secrets.SM_TOKEN }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: |
+          python main.py
+
+      - name: Send email on success
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_FROM }}
+          password: ${{ secrets.EMAIL_APP_PASSWORD }}
+          subject: "✅ Geofence → Smartsheet SUCCESS"
+          body: |
+            Geofence automation completed successfully.
+
+            Repository: ${{ github.repository }}
+            Run ID: ${{ github.run_id }}
+            Time (UTC): ${{ github.run_started_at }}
+          to: ${{ secrets.EMAIL_TO }}
+          from: Geofence Automation
+
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_FROM }}
+          password: ${{ secrets.EMAIL_APP_PASSWORD }}
+          subject: "❌ Geofence → Smartsheet FAILED"
+          body: |
+            Geofence automation FAILED.
+
+            Repository: ${{ github.repository }}
+            Run ID: ${{ github.run_id }}
+
+            Please check GitHub Actions logs.
+          to: ${{ secrets.EMAIL_TO }}
+          from: Geofence Automation

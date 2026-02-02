@@ -308,7 +308,7 @@ def main():
     current_start = days_ago
     chunk_num = 1
 
-    print(f"\n📊 Fetching {days_ago} days of data in {CHUNK_DAYS}-day chunks...\n")
+    print(f"\n📊 Fetching data from {days_ago.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')} ({CHUNK_DAYS}-day chunks)...\n")
 
     while current_start < now:
         current_end = min(current_start + timedelta(days=CHUNK_DAYS), now)
